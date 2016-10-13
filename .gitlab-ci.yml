@@ -1,14 +1,16 @@
 image: docker:latest
 services:
-  - docker-dind
+  - docker:dind
 
 stages:
   - build
   - test
+  - release
 
 variables:
-  CONTAINER_TEST_IMAGE: registry.gitlab.com/jeizsm/telegram-bot:$CI_BUILD_REF_NAME
-  CONTAINER_RELEASE_IMAGE: registry.gitlab.com/jeizsm/telegram-bot:latest
+  CONTAINER_TEST_IMAGE: $CI_REGISTRY_IMAGE:test-$CI_BUILD_REF_NAME
+  CONTAINER_RELEASE_IMAGE: $CI_REGISTRY_IMAGE:release-$CI_BUILD_REF
+  CONTAINER_RELEASE_IMAGE_LATEST: $CI_REGISTRY_IMAGE:latest
 
 before_script:
   - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN registry.gitlab.com
@@ -16,7 +18,7 @@ before_script:
 build:
   stage: build
   script:
-    - docker build --pull -t $CONTAINER_TEST_IMAGE .
+    - docker build --pull -t $CONTAINER_TEST_IMAGE . --build-arg MIX_ENV=test
     - docker push $CONTAINER_TEST_IMAGE
 
 test:
@@ -24,5 +26,14 @@ test:
   script:
     - docker pull $CONTAINER_TEST_IMAGE
     - docker run $CONTAINER_TEST_IMAGE dogma
-    - docker run $CONTAINER_TEST_IMAGE credo
+    - docker run $CONTAINER_TEST_IMAGE credo --strict
     - docker run $CONTAINER_TEST_IMAGE test
+
+release:
+  stage: release
+  script:
+    - docker build --pull -t $CONTAINER_RELEASE_IMAGE . --build-arg MIX_ENV=prod
+    - docker push $CONTAINER_RELEASE_IMAGE
+    - docker push $CONTAINER_RELEASE_IMAGE_LATEST
+  only:
+    - master

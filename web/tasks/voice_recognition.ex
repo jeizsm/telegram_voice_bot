@@ -2,6 +2,7 @@ defmodule TelegramBot.VoiceRecognition do
   @moduledoc false
 
   @rate 16_000
+
   alias TelegramBot.TelegramMessageSupervisor, as: Supervisor
   alias TelegramBot.Downloadable
 
