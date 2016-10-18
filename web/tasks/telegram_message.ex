@@ -3,7 +3,7 @@ defmodule TelegramBot.TelegramMessage do
 
   import TelegramBot.Helper, only: [deep_atomize: 1]
   alias TelegramBot.VoiceRecognition
-  alias Nadia
+  alias Nadia.Parser
 
   def parse(message) do
     parsed_message = message |> deep_atomize |> List.wrap |>
